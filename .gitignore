@@ -1,0 +1,61 @@
+# .gitignore
+
+# Binaries for compiled output (bukan folder source code!)
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/tmp/
+*.out
+/api          # Binary hasil build di root
+/worker       # Binary hasil build di root
+
+# Test & Coverage
+*.test
+coverage.out
+coverage.html
+*.coverprofile
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+
+# Storage & Uploads (file uploads, bukan source code!)
+/storage/*.pdf
+/storage/*.png
+!storage/.gitkeep
+uploads/
+temp/
+
+# Dependencies
+vendor/
+
+# Swagger generated docs
+docs/docs.go
+docs/swagger.json
+docs/swagger.yaml
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Build artifacts
+dist/
+build/
+
+# Temporary files
+/tmp/
+*.tmp

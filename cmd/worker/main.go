@@ -1,0 +1,44 @@
+// cmd/worker/main.go
+package main
+
+import (
+	"os"
+	"os/signal"
+	"syscall"
+
+	"fundivest/internal/config"
+
+	"github.com/joho/godotenv"
+	"go.uber.org/zap"
+)
+
+func main() {
+	if err := godotenv.Load(); err != nil {
+
+	}
+
+	cfg := config.Load()
+	logger := config.NewLogger(cfg.Environment)
+	defer func() { _ = logger.Sync() }()
+
+	logger.Info("Starting worker")
+
+	infra := SetupInfrastructure(cfg, logger)
+	defer infra.Close()
+
+	worker := SetupWorker(cfg, infra, logger)
+
+	go func() {
+		logger.Info("Worker started, waiting for jobs...")
+		if err := worker.Start(); err != nil {
+			logger.Fatal("Worker failed", zap.Error(err))
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	<-quit
+	logger.Info("Shutting down worker...")
+	worker.Shutdown()
+}

@@ -1,0 +1,70 @@
+<!-- templates/certificate.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .certificate {
+            background: white;
+            padding: 60px;
+            border: 10px solid #667eea;
+            text-align: center;
+            height: 100%;
+        }
+        h1 {
+            font-size: 48px;
+            color: #667eea;
+            margin: 20px 0;
+        }
+        .name {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 30px 0;
+            color: #333;
+        }
+        .course {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        .date {
+            font-size: 18px;
+            color: #666;
+            margin: 20px 0;
+        }
+        .qr {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="certificate">
+        <h1>Certificate of Completion</h1>
+        
+        <!--Nama Panjang-->
+        <div class="name">{{.Name}}</div>
+        
+        <!--Nama Kursus-->
+        <div class="course">has successfully completed<br><strong>{{.CourseID}}</strong></div>
+        
+        <!--Tanggal pembuatan sertifikat-->
+        <div class="date">Issued on {{.IssuedAt}}</div>
+        
+        <!--QR Verifikasi sertifikat-->
+        <div class="qr">
+            <img src="{{.QRCode}}" alt="QR Code" width="150" height="150">
+            <p style="font-size: 12px; color: #999;">Scan to verify</p>
+        </div>
+    </div>
+</body>
+</html>

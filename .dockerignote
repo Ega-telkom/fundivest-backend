@@ -1,0 +1,34 @@
+.git
+.github
+*.md
+.env
+.env.*
+*.log
+coverage.out
+coverage.html
+
+# Test files
+*_test.go
+tests/
+
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+tmp/
+
+# Development
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Storage
+storage/
+!storage/.gitkeep
+
+# Docker
+docker-compose*.yml
+Dockerfile*
