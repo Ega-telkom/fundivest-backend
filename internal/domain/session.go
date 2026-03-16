@@ -1,7 +1,10 @@
 // internal/domain/session.go
 package domain
 
-import "time"
+import (
+	"time"
+	"slices"
+)
 
 type Session struct {
     ID                string
@@ -35,10 +38,5 @@ func (s *Session) CanCompleteChapter(chapter int) error {
 }
 
 func (s *Session) HasCompletedChapter(chapter int) bool {
-    for _, completed := range s.ChaptersCompleted {
-        if completed == chapter {
-            return true
-        }
-    }
-    return false
+    return slices.Contains(s.ChaptersCompleted, chapter)
 }
