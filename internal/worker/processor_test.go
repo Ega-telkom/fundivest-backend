@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"fundivest/internal/domain"
-	"fundivest/internal/worker"
+	"github.com/Ega-telkom/fundivest-backend/internal/domain"
+	"github.com/Ega-telkom/fundivest-backend/internal/worker"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

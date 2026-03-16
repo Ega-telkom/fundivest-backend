@@ -9,7 +9,7 @@ import (
     "time"
     
     "github.com/valkey-io/valkey-go"
-    "fundivest/internal/domain"
+    "github.com/Ega-telkom/fundivest-backend/internal/domain"
 )
 
 type SessionRepo struct {

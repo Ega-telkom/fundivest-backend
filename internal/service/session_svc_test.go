@@ -8,8 +8,8 @@ import (
     
     "github.com/stretchr/testify/assert"
     "github.com/stretchr/testify/mock"
-    "fundivest/internal/domain"
-    "fundivest/internal/service"
+    "github.com/Ega-telkom/fundivest-backend/internal/domain"
+    "github.com/Ega-telkom/fundivest-backend/internal/service"
 )
 
 func TestSessionService_CreateSession(t *testing.T) {

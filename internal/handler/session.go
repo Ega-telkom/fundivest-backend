@@ -4,7 +4,7 @@ package handler
 import (
 	"context"
 	"fmt"
-	"fundivest/internal/domain"
+	"github.com/Ega-telkom/fundivest-backend/internal/domain"
 
 	"github.com/gofiber/fiber/v3"
 )

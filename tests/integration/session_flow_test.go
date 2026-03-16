@@ -9,9 +9,9 @@ import (
     "github.com/stretchr/testify/assert"
     "github.com/stretchr/testify/require"
     
-    "fundivest/internal/domain"
-    repoValkey "fundivest/internal/repository/valkey"
-    "fundivest/internal/service"
+    "github.com/Ega-telkom/fundivest-backend/internal/domain"
+    repoValkey "github.com/Ega-telkom/fundivest-backend/internal/repository/valkey"
+    "github.com/Ega-telkom/fundivest-backend/internal/service"
 )
 
 func TestSessionFlow_ChapterProgression(t *testing.T) {

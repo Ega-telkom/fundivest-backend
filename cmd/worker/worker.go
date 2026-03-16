@@ -2,10 +2,10 @@
 package main
 
 import (
-	"fundivest/internal/config"
-	"fundivest/internal/queue"
-	repoPostgres "fundivest/internal/repository/postgres"
-	"fundivest/internal/worker"
+	"github.com/Ega-telkom/fundivest-backend/internal/config"
+	"github.com/Ega-telkom/fundivest-backend/internal/queue"
+	repoPostgres "github.com/Ega-telkom/fundivest-backend/internal/repository/postgres"
+	"github.com/Ega-telkom/fundivest-backend/internal/worker"
 
 	"go.uber.org/zap"
 )

@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"fundivest/internal/config"
+	"github.com/Ega-telkom/fundivest-backend/internal/config"
 
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"

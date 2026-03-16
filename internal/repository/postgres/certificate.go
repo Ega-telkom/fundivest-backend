@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"fundivest/internal/domain"
+	"github.com/Ega-telkom/fundivest-backend/internal/domain"
 
 	"gorm.io/gorm"
 )

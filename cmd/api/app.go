@@ -10,15 +10,15 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"go.uber.org/zap"
 
-	_ "fundivest/docs"
+	_ "github.com/Ega-telkom/fundivest-backend/docs"
 
 	"github.com/swaggo/http-swagger/v2"
 
-	"fundivest/internal/config"
-	"fundivest/internal/handler"
-	repoPostgres "fundivest/internal/repository/postgres"
-	repoValkey "fundivest/internal/repository/valkey"
-	"fundivest/internal/service"
+	"github.com/Ega-telkom/fundivest-backend/internal/config"
+	"github.com/Ega-telkom/fundivest-backend/internal/handler"
+	repoPostgres "github.com/Ega-telkom/fundivest-backend/internal/repository/postgres"
+	repoValkey "github.com/Ega-telkom/fundivest-backend/internal/repository/valkey"
+	"github.com/Ega-telkom/fundivest-backend/internal/service"
 )
 
 func SetupApp(cfg *config.Config, infra *Infrastructure, logger *zap.Logger) *fiber.App {
@@ -51,7 +51,6 @@ func SetupApp(cfg *config.Config, infra *Infrastructure, logger *zap.Logger) *fi
     app.Use(cors.New())
 
    	app.Get("/swagger/*", adaptor.HTTPHandler(httpSwagger.Handler(
-		// httpSwagger.InstanceName(spec.SwaggerInfo.InfoInstanceName),
 		httpSwagger.DefaultModelsExpandDepth(-1),
 	)))
 

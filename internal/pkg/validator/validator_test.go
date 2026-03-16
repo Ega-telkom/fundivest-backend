@@ -5,7 +5,7 @@ import (
     "testing"
     
     "github.com/stretchr/testify/assert"
-    "fundivest/internal/pkg/validator"
+    "github.com/Ega-telkom/fundivest-backend/internal/pkg/validator"
 )
 
 func TestIsValidUUID(t *testing.T) {

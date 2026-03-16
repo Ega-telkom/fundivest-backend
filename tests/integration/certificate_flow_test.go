@@ -9,10 +9,10 @@ import (
     "github.com/stretchr/testify/assert"
     "github.com/stretchr/testify/require"
     
-    "fundivest/internal/domain"
-    repoPostgres "fundivest/internal/repository/postgres"
-    repoValkey "fundivest/internal/repository/valkey"
-    "fundivest/internal/service"
+    "github.com/Ega-telkom/fundivest-backend/internal/domain"
+    repoPostgres "github.com/Ega-telkom/fundivest-backend/internal/repository/postgres"
+    repoValkey "github.com/Ega-telkom/fundivest-backend/internal/repository/valkey"
+    "github.com/Ega-telkom/fundivest-backend/internal/service"
 )
 
 func TestCertificateFlow_HappyPath(t *testing.T) {

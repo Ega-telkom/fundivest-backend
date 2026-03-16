@@ -5,7 +5,7 @@ import (
     "context"
     
     "github.com/stretchr/testify/mock"
-    "fundivest/internal/domain"
+    "github.com/Ega-telkom/fundivest-backend/internal/domain"
 )
 
 // ===== SESSION REPO MOCK =====

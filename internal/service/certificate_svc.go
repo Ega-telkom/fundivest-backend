@@ -7,7 +7,7 @@ import (
     "time"
     
     "github.com/google/uuid"
-    "fundivest/internal/domain"
+    "github.com/Ega-telkom/fundivest-backend/internal/domain"
 )
 
 type CertificateRepository interface {

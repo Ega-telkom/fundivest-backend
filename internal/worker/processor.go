@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"fundivest/internal/domain"
+	"github.com/Ega-telkom/fundivest-backend/internal/domain"
 
 	"go.uber.org/zap"
 )

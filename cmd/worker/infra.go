@@ -9,8 +9,8 @@ import (
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
 
-	"fundivest/internal/config"
-	"fundivest/internal/storage"
+	"github.com/Ega-telkom/fundivest-backend/internal/config"
+	"github.com/Ega-telkom/fundivest-backend/internal/storage"
 )
 
 type Infrastructure struct {

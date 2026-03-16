@@ -11,7 +11,7 @@ import (
     "gorm.io/gorm"
     "gorm.io/gorm/logger"
     
-    repoPostgres "fundivest/internal/repository/postgres"
+    repoPostgres "github.com/Ega-telkom/fundivest-backend/internal/repository/postgres"
 )
 
 const (

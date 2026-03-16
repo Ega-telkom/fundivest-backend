@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"html/template"
 
-	"fundivest/internal/domain"
-	"fundivest/internal/pkg/qrcode"
+	"github.com/Ega-telkom/fundivest-backend/internal/domain"
+	"github.com/Ega-telkom/fundivest-backend/internal/pkg/qrcode"
 )
 
 type HTMLTemplateRenderer struct {

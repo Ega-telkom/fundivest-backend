@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"fundivest/internal/domain"
-	"fundivest/internal/handler"
+	"github.com/Ega-telkom/fundivest-backend/internal/domain"
+	"github.com/Ega-telkom/fundivest-backend/internal/handler"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"

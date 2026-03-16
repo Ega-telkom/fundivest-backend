@@ -10,10 +10,10 @@ import (
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
 
-	"fundivest/internal/config"
-	"fundivest/internal/queue"
-	repoPostgres "fundivest/internal/repository/postgres"
-	"fundivest/internal/storage"
+	"github.com/Ega-telkom/fundivest-backend/internal/config"
+	"github.com/Ega-telkom/fundivest-backend/internal/queue"
+	repoPostgres "github.com/Ega-telkom/fundivest-backend/internal/repository/postgres"
+	"github.com/Ega-telkom/fundivest-backend/internal/storage"
 )
 
 type Infrastructure struct {

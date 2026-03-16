@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 
-	"fundivest/internal/config"
+	"github.com/Ega-telkom/fundivest-backend/internal/config"
 )
 
 // @title           fundivest REST API

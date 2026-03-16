@@ -3,7 +3,7 @@ package handler
 
 import (
     "github.com/gofiber/fiber/v3"
-    "fundivest/internal/domain"
+    "github.com/Ega-telkom/fundivest-backend/internal/domain"
 )
 
 // Success response
