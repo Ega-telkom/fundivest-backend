@@ -100,14 +100,14 @@ db-shell:
 	
 # Start infrastructure only
 dev-up:
-	$(CONTAINER_ENGINE)-compose up postgres valkey minio gotenberg -d
+	$(CONTAINER_ENGINE)-compose -f docker-compose.dev.yml up postgres valkey minio gotenberg -d
 	@echo "Infrastructure started!"
 	@echo "Postgres: localhost:5432"
 	@echo "Valkey: localhost:6379"
 	@echo "Gotenberg: localhost:3000"
 
 dev-down:
-	$(CONTAINER_ENGINE)-compose down
+	$(CONTAINER_ENGINE)-compose -f docker-compose.dev.yml down
 
 # Run API with hot reload
 dev-api:
