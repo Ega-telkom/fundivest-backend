@@ -19,39 +19,39 @@ help:
 	@echo "  make deploy        - Deploy to production"
 
 build:
-	$(CONTAINER_ENGINE)-compose build
+	$(CONTAINER_ENGINE) compose build
 
 up:
-	$(CONTAINER_ENGINE)-compose up -d
+	$(CONTAINER_ENGINE) compose up -d
 	@echo "Services started!"
 	@echo "API: http://localhost:8080"
 
 down:
-	$(CONTAINER_ENGINE)-compose down
+	$(CONTAINER_ENGINE) compose down
 
 logs:
-	$(CONTAINER_ENGINE)-compose logs -f
+	$(CONTAINER_ENGINE) compose logs -f
 
 logs-api:
-	$(CONTAINER_ENGINE)-compose logs -f api
+	$(CONTAINER_ENGINE) compose logs -f api
 
 logs-worker:
-	$(CONTAINER_ENGINE)-compose logs -f worker
+	$(CONTAINER_ENGINE) compose logs -f worker
 
 clean:
-	$(CONTAINER_ENGINE)-compose down -v
+	$(CONTAINER_ENGINE) compose down -v
 	rm -rf storage/*
 
 restart:
-	$(CONTAINER_ENGINE)-compose restart
+	$(CONTAINER_ENGINE) compose restart
 
 # Testing
 test-setup:
-	$(CONTAINER_ENGINE)-compose -f docker-compose.test.yml up -d
+	$(CONTAINER_ENGINE) compose -f docker-compose.test.yml up -d
 	sleep 3
 
 test-teardown:
-	$(CONTAINER_ENGINE)-compose -f docker-compose.test.yml down -v
+	$(CONTAINER_ENGINE) compose -f docker-compose.test.yml down -v
 
 test: test-setup
 	@echo "=== TESTING START ==="
@@ -74,7 +74,7 @@ db-migrate:
 	@echo "Running migrations..."
 	@for file in migrations/*.sql; do \
 		echo "Applying $$file..."; \
-		$(CONTAINER_ENGINE)-compose exec -T postgres psql -U certuser -d certdb -f - < $$file; \
+		$(CONTAINER_ENGINE) compose exec -T postgres psql -U certuser -d certdb -f - < $$file; \
 	done
 	@echo "Migrations complete!"
 
@@ -83,31 +83,31 @@ db-migrate-single:
 		echo "Usage: make db-migrate-single FILE=001_create_certificates.sql"; \
 		exit 1; \
 	fi
-	$(CONTAINER_ENGINE)-compose exec -T postgres psql -U certuser -d certdb -f - < migrations/$(FILE)
+	$(CONTAINER_ENGINE) compose exec -T postgres psql -U certuser -d certdb -f - < migrations/$(FILE)
 
 db-rollback:
 	@if [ -z "$(FILE)" ]; then \
 		echo "Usage: make db-rollback FILE=001_create_certificates_down.sql"; \
 		exit 1; \
 	fi
-	$(CONTAINER_ENGINE)-compose exec -T postgres psql -U certuser -d certdb -f - < migrations/$(FILE)
+	$(CONTAINER_ENGINE) compose exec -T postgres psql -U certuser -d certdb -f - < migrations/$(FILE)
 
 db-status:
-	$(CONTAINER_ENGINE)-compose exec postgres psql -U certuser -d certdb -c "SELECT * FROM schema_migrations ORDER BY version;"
+	$(CONTAINER_ENGINE) compose exec postgres psql -U certuser -d certdb -c "SELECT * FROM schema_migrations ORDER BY version;"
 
 db-shell:
-	$(CONTAINER_ENGINE)-compose exec postgres psql -U certuser -d certdb
+	$(CONTAINER_ENGINE) compose exec postgres psql -U certuser -d certdb
 	
 # Start infrastructure only
 dev-up:
-	$(CONTAINER_ENGINE)-compose up postgres valkey minio gotenberg -d
+	$(CONTAINER_ENGINE) compose up postgres valkey minio gotenberg -d
 	@echo "Infrastructure started!"
 	@echo "Postgres: localhost:5432"
 	@echo "Valkey: localhost:6379"
 	@echo "Gotenberg: localhost:3000"
 
 dev-down:
-	$(CONTAINER_ENGINE)-compose down
+	$(CONTAINER_ENGINE) compose down
 
 # Run API with hot reload
 dev-api:
@@ -125,10 +125,10 @@ dev:
 
 # Deployment
 deploy-build:
-	$(CONTAINER_ENGINE)-compose -f docker-compose.prod.yml build
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml build
 
 deploy-up:
-	$(CONTAINER_ENGINE)-compose -f docker-compose.prod.yml up -d
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml up -d
 
 deploy-down:
-	$(CONTAINER_ENGINE)-compose -f docker-compose.prod.yml down
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml down
