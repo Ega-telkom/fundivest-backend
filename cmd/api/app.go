@@ -10,8 +10,6 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"go.uber.org/zap"
 
-	_ "github.com/Ega-telkom/fundivest-backend/docs"
-
 	"github.com/swaggo/http-swagger/v2"
 
 	"github.com/Ega-telkom/fundivest-backend/internal/config"
