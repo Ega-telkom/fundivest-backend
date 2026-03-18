@@ -2,7 +2,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"time"
 	"os/signal"
@@ -21,9 +20,10 @@ import (
 // @host      localhost:8080
 // @BasePath  /api/v1
 func main() {
-    // Load environment
-    if err := godotenv.Load(); err != nil {
-        log.Println("No .env file found")
+	// Load .env only in non-production
+    // In production, vars come from docker-compose env_file
+    if os.Getenv("ENVIRONMENT") != "production" {
+        _ = godotenv.Load()
     }
 
     // Load config
