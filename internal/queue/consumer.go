@@ -20,9 +20,12 @@ type AsynqConsumer struct {
     processor JobProcessor
 }
 
-func NewAsynqConsumer(valkeyAddr string, processor JobProcessor) *AsynqConsumer {
+func NewAsynqConsumer(valkeyAddr string, password string, processor JobProcessor) *AsynqConsumer {
     server := asynq.NewServer(
-        asynq.RedisClientOpt{Addr: valkeyAddr},
+        asynq.RedisClientOpt{
+        	Addr: valkeyAddr,
+        	Password: password,
+        },
         asynq.Config{
             Concurrency: 10,
         },

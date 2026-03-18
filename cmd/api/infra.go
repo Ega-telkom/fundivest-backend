@@ -47,6 +47,7 @@ func SetupInfrastructure(cfg *config.Config, logger *zap.Logger) *Infrastructure
 	// Init Valkey
 	valkeyClient, err := valkey.NewClient(valkey.ClientOption{
 		InitAddress: []string{cfg.ValkeyURL},
+		Password: cfg.ValkeyPassword,
 	})
 	if err != nil {
 		logger.Fatal("Failed to connect to Valkey", zap.Error(err))
@@ -54,7 +55,7 @@ func SetupInfrastructure(cfg *config.Config, logger *zap.Logger) *Infrastructure
 	logger.Info("Connected to Valkey")
 
 	// Init Queue
-	queuePublisher := queue.NewAsynqPublisher(cfg.ValkeyURL)
+	queuePublisher := queue.NewAsynqPublisher(cfg.ValkeyURL, cfg.ValkeyPassword)
 	logger.Info("Queue publisher initialized")
 
 	// Init Storage
