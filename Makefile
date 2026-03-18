@@ -99,7 +99,8 @@ deploy:
 
 deploy-health:
 	@echo "Checking health..."
-	@curl -sf http://localhost:8080/health && echo "API healthy" || echo "API down"
+	@sleep 3
+	@curl -sf http://localhost:8080/health && echo ":: API healthy" || echo "API down"
 	@$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production ps
 
 # ============================================================================
