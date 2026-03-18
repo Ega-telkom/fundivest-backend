@@ -1,44 +1,51 @@
-# docker-compose.yml (Development)
+# docker-compose.prod.yml (Production)
 services:
   postgres:
     image: postgres:16-alpine
     container_name: certdb-postgres
+    env_file: .env.production
     environment:
-      POSTGRES_DB: certdb
-      POSTGRES_USER: certuser
-      POSTGRES_PASSWORD: certpass
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${POSTGRES_DB:-certdb}
+      POSTGRES_USER: ${POSTGRES_USER:-certuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # NO ports - internal only
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U certuser"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-certuser}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - cert-network
+    restart: unless-stopped
 
   valkey:
     image: valkey/valkey:8
     container_name: certdb-valkey
-    ports:
-      - "6379:6379"
+    env_file: .env.production
+    command: >
+      valkey-server
+      --requirepass ${VALKEY_PASSWORD}
+      --appendonly yes
+    # NO ports - internal only
     volumes:
       - valkey_data:/data
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
     healthcheck:
-      test: ["CMD", "valkey-cli", "ping"]
+      test: ["CMD", "valkey-cli", "--pass", "${VALKEY_PASSWORD}", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
     networks:
       - cert-network
-
+    restart: unless-stopped
+    
   gotenberg:
     image: gotenberg/gotenberg:8
     container_name: certdb-gotenberg
-    ports:
-      - "3000:3000"
+    # NO ports - internal only
     command:
       - "gotenberg"
       - "--api-timeout=30s"
@@ -49,16 +56,17 @@ services:
       retries: 5
     networks:
       - cert-network
+    restart: unless-stopped
 
   minio:
     image: minio/minio:latest
     container_name: certdb-minio
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      # Console ONLY exposed to localhost for admin access via SSH tunnel
+      - "127.0.0.1:9001:9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin123
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}  # From .env
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}  # From .env
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
@@ -69,30 +77,35 @@ services:
       retries: 5
     networks:
       - cert-network
+    restart: unless-stopped
 
-  # API & Worker - for full stack development
   api:
     build:
       context: .
       dockerfile: Dockerfile.api
+    image: certdb-api:latest
     container_name: certdb-api
     ports:
-      - "8080:8080"
+      # Bind to localhost only, use Nginx reverse proxy
+      - "127.0.0.1:8080:8080"
+    env_file:
+      - .env.production
     environment:
-      DATABASE_URL: postgres://certuser:certpass@postgres:5432/certdb?sslmode=disable
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
       VALKEY_URL: valkey:6379
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
       GOTENBERG_URL: http://gotenberg:3000
       TEMPLATE_PATH: /app/templates/certificate.html
       STORAGE_TYPE: minio
       MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin123
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET: certificates
       MINIO_USE_SSL: "false"
-      ENVIRONMENT: development
-      FRONTEND_URL: http://localhost:3000
+      ENVIRONMENT: production
+      FRONTEND_URL: ${FRONTEND_URL}
     volumes:
-      - ./templates:/app/templates
+      - ./templates:/app/templates:ro  # Read-only
     depends_on:
       postgres:
         condition: service_healthy
@@ -103,27 +116,33 @@ services:
     networks:
       - cert-network
     restart: unless-stopped
+    # Security: Run as non-root
+    user: "1000:1000"
 
   worker:
     build:
       context: .
       dockerfile: Dockerfile.worker
+    image: certdb-worker:latest
     container_name: certdb-worker
+    env_file:
+      - .env.production
     environment:
-      DATABASE_URL: postgres://certuser:certpass@postgres:5432/certdb?sslmode=disable
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
       VALKEY_URL: valkey:6379
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
       GOTENBERG_URL: http://gotenberg:3000
       TEMPLATE_PATH: /app/templates/certificate.html
       STORAGE_TYPE: minio
       MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin123
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET: certificates
       MINIO_USE_SSL: "false"
-      ENVIRONMENT: development
-      FRONTEND_URL: http://localhost:3000
+      ENVIRONMENT: production
+      FRONTEND_URL: ${FRONTEND_URL}
     volumes:
-      - ./templates:/app/templates
+      - ./templates:/app/templates:ro  # Read-only
     depends_on:
       postgres:
         condition: service_healthy
@@ -132,6 +151,8 @@ services:
     networks:
       - cert-network
     restart: unless-stopped
+    # Security: Run as non-root
+    user: "1000:1000"
 
 volumes:
   postgres_data:

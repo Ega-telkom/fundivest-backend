@@ -1,134 +1,117 @@
 # Makefile
-.PHONY: help build up down logs clean test deploy
-CONTAINER_ENGINE ?= docker
-
-ifeq ($(shell command -v podman 2> /dev/null),)
-    CONTAINER_ENGINE := docker
-else
-    CONTAINER_ENGINE := podman
-endif
+.PHONY: help
+CONTAINER_ENGINE ?= $(shell command -v podman 2>/dev/null || echo docker)
+BRANCH = trunk
 
 help:
-	@echo "Available commands:"
-	@echo "  make build         - Build docker images"
-	@echo "  make up            - Start all services"
-	@echo "  make down          - Stop all services"
-	@echo "  make logs          - Show logs"
-	@echo "  make clean         - Clean up volumes"
-	@echo "  make test          - Run tests"
-	@echo "  make deploy        - Deploy to production"
+	@echo "Why, hello there!"
+	@echo ""
+	@echo "Development:"
+	@echo "  make dev-up          - Start dev infrastructure only"
+	@echo "  make dev-down        - Stop dev infrastructure"
+	@echo "  make dev-api         - Run API with hot reload"
+	@echo "  make dev-worker      - Run worker with hot reload"
+	@echo "  make dev-full        - Run all infrastructure"
+	@echo ""
+	@echo "Production:"
+	@echo "  make prod-build      - Build all services"
+	@echo "  make prod-up         - Start all services"
+	@echo "  make prod-down       - Stop all services"
+	@echo "  make prod-logs       - All services Logs"
+	@echo "  make prod-logs-api   - API Logs"
+	@echo "  make prod-logs-worker- Worker Logs"
+	@echo "  make prod-restart    - Restart all services"
+	@echo ""
+	@echo "Testing:"
+	@echo "  make test            - Run all tests with test DB"
+	@echo ""
+	@echo "Database:"
+	@echo "  make db-migrate      - Run all migrations"
+	@echo "  make db-shell        - Open psql shell"
+	@echo ""
+	@echo "Deployment:"
+	@echo "  make deploy          - Deploy to production"
+	@echo "  make deploy-health   - Check production health"
 
-build:
-	$(CONTAINER_ENGINE) compose build
+# ============================================================================
+# DEVELOPMENT
+# ============================================================================
 
-up:
-	$(CONTAINER_ENGINE) compose up -d
-	@echo "Services started!"
-	@echo "API: http://localhost:8080"
+.PHONY: dev-up dev-down dev-api dev-worker
 
-down:
-	$(CONTAINER_ENGINE) compose down
-
-logs:
-	$(CONTAINER_ENGINE) compose logs -f
-
-logs-api:
-	$(CONTAINER_ENGINE) compose logs -f api
-
-logs-worker:
-	$(CONTAINER_ENGINE) compose logs -f worker
-
-clean:
-	$(CONTAINER_ENGINE) compose down -v
-	rm -rf storage/*
-
-restart:
-	$(CONTAINER_ENGINE) compose restart
-
-# Testing
-test-setup:
-	$(CONTAINER_ENGINE) compose -f docker-compose.test.yml up -d
-	sleep 3
-
-test-teardown:
-	$(CONTAINER_ENGINE) compose -f docker-compose.test.yml down -v
-
-test: test-setup
-	@echo "=== TESTING START ==="
-	go test ./... -v -coverprofile=coverage.out
-	@echo "=== TESTING ENDED ==="
-	$(MAKE) test-teardown
-	
-# CI
-ci-test:
-	go test ./internal/... -v -race -coverprofile=coverage.out
-	go test ./tests/integration/... -v
-
-ci-lint:
-	golangci-lint run --timeout=5m
-
-ci: ci-lint ci-test
-	
-# Database
-db-migrate:
-	@echo "Running migrations..."
-	@for file in migrations/*.sql; do \
-		echo "Applying $$file..."; \
-		$(CONTAINER_ENGINE) compose exec -T postgres psql -U certuser -d certdb -f - < $$file; \
-	done
-	@echo "Migrations complete!"
-
-db-migrate-single:
-	@if [ -z "$(FILE)" ]; then \
-		echo "Usage: make db-migrate-single FILE=001_create_certificates.sql"; \
-		exit 1; \
-	fi
-	$(CONTAINER_ENGINE) compose exec -T postgres psql -U certuser -d certdb -f - < migrations/$(FILE)
-
-db-rollback:
-	@if [ -z "$(FILE)" ]; then \
-		echo "Usage: make db-rollback FILE=001_create_certificates_down.sql"; \
-		exit 1; \
-	fi
-	$(CONTAINER_ENGINE) compose exec -T postgres psql -U certuser -d certdb -f - < migrations/$(FILE)
-
-db-status:
-	$(CONTAINER_ENGINE) compose exec postgres psql -U certuser -d certdb -c "SELECT * FROM schema_migrations ORDER BY version;"
-
-db-shell:
-	$(CONTAINER_ENGINE) compose exec postgres psql -U certuser -d certdb
-	
-# Start infrastructure only
 dev-up:
 	$(CONTAINER_ENGINE) compose up postgres valkey minio gotenberg -d
-	@echo "Infrastructure started!"
-	@echo "Postgres: localhost:5432"
-	@echo "Valkey: localhost:6379"
-	@echo "Gotenberg: localhost:3000"
 
 dev-down:
 	$(CONTAINER_ENGINE) compose down
 
-# Run API with hot reload
 dev-api:
 	air -c .air.toml
 
-# Run Worker with hot reload
 dev-worker:
 	air -c .air-worker.toml
 
-# Run both (requires tmux/screen)
-dev:
-	@echo "Starting development environment..."
-	$(MAKE) dev-up
-	@echo "Run 'make dev-api' in one terminal and 'make dev-worker' in another"
+dev-full:
+	$(CONTAINER_ENGINE) compose up -d
 
-# Deployment
-deploy-build:
+# ============================================================================
+# PRODUCTION
+# ============================================================================
+
+.PHONY: prod-build prod-up prod-down prod-logs prod-restart
+
+prod-build:
 	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml build
 
-deploy-up:
+prod-up:
 	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml up -d
 
-deploy-down:
+prod-down:
 	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml down
+
+prod-logs:
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml logs -f
+
+prod-logs-api:
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml logs -f api
+
+prod-logs-worker:
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml logs -f worker
+
+prod-restart:
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml restart api worker
+
+# ============================================================================
+# DEPLOYMENT
+# ============================================================================
+
+.PHONY: deploy deploy-health
+
+deploy:
+	@echo "Pulling from remote source..."
+	@git pull origin $(BRANCH)
+	@echo "Building from source..."
+	@$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml build
+	@$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml up -d --no-deps api worker
+	@$(CONTAINER_ENGINE) image prune -f
+	@echo "Deploy complete!"
+	@$(MAKE) deploy-health
+
+deploy-health:
+	@echo "Checking health..."
+	@curl -sf http://localhost:8080/health && echo "API healthy" || echo "API down"
+	@$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml ps
+
+# ============================================================================
+# TESTING
+# ============================================================================
+
+.PHONY: test
+
+test:
+	@echo "Running tests..."
+	$(CONTAINER_ENGINE) compose -f docker-compose.test.yml up -d
+	@sleep 3
+	go test ./... -v -coverprofile=coverage.out
+	$(CONTAINER_ENGINE) compose -f docker-compose.test.yml down -v
+	@echo "Tests complete!"
