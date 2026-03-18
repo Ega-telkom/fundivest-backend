@@ -61,10 +61,10 @@ dev-full:
 .PHONY: prod-build prod-up prod-down prod-logs prod-restart
 
 prod-build:
-	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml build
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production build
 
 prod-up:
-	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml up -d
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production up -d
 
 prod-down:
 	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml down
@@ -79,7 +79,7 @@ prod-logs-worker:
 	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml logs -f worker
 
 prod-restart:
-	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml restart api worker
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production restart api worker
 
 # ============================================================================
 # DEPLOYMENT
@@ -91,8 +91,8 @@ deploy:
 	@echo "Pulling from remote source..."
 	@git pull origin $(BRANCH)
 	@echo "Building from source..."
-	@$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml build
-	@$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml up -d --no-deps api worker
+	@$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production build
+	@$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production up -d --no-deps api worker
 	@$(CONTAINER_ENGINE) image prune -f
 	@echo "Deploy complete!"
 	@$(MAKE) deploy-health
