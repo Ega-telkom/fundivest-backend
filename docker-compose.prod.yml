@@ -5,8 +5,8 @@ services:
     container_name: certdb-postgres
     env_file: .env.production
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB:-certdb}
+      POSTGRES_USER: ${POSTGRES_USER:-certuser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     # NO ports - internal only
     volumes:
