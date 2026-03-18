@@ -67,16 +67,16 @@ prod-up:
 	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production up -d
 
 prod-down:
-	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml down
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production down
 
 prod-logs:
-	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml logs -f
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production logs -f
 
 prod-logs-api:
-	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml logs -f api
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production logs -f api
 
 prod-logs-worker:
-	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml logs -f worker
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production logs -f worker
 
 prod-restart:
 	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production restart api worker
@@ -100,7 +100,7 @@ deploy:
 deploy-health:
 	@echo "Checking health..."
 	@curl -sf http://localhost:8080/health && echo "API healthy" || echo "API down"
-	@$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml ps
+	@$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production ps
 
 # ============================================================================
 # TESTING
