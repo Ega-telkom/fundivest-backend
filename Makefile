@@ -69,7 +69,7 @@ prod-build:
 	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production build
 
 prod-up:
-	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production up -d
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production up -d --remove-orphans
 
 prod-down:
 	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production down
@@ -130,7 +130,7 @@ test:
 
 monitor-up:
 	@echo "Starting monitoring tools..."
-	$(CONTAINER_ENGINE) compose -f docker-compose.monitoring.yml --env-file .env.production up -d
+	$(CONTAINER_ENGINE) compose -f docker-compose.monitoring.yml --env-file .env.production up -d --remove-orphans
 	@echo "Monitoring tools started!"
 	@echo "   pgAdmin:   http://localhost:5050"
 	@echo "   Redis UI:  http://localhost:7843"
