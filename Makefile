@@ -32,6 +32,11 @@ help:
 	@echo "Deployment:"
 	@echo "  make deploy          - Deploy to production"
 	@echo "  make deploy-health   - Check production health"
+	@echo ""
+	@echo "Monitoring:"
+	@echo "  make monitor-up      - Run monitoring services" 
+	@echo "  make monitor-down    - Stop monitoring services" 
+	@echo "  make monitor-logs    - Monitoring services Logs" 
 
 # ============================================================================
 # DEVELOPMENT
@@ -44,6 +49,7 @@ dev-up:
 
 dev-down:
 	$(CONTAINER_ENGINE) compose down
+	@echo "hello $(USER)"
 
 dev-api:
 	air -c .air.toml
@@ -116,3 +122,25 @@ test:
 	go test ./... -v -coverprofile=coverage.out
 	$(CONTAINER_ENGINE) compose -f docker-compose.test.yml down -v
 	@echo "Tests complete!"
+
+# ============================================================================
+# MONITORING TOOLS
+# ============================================================================
+
+.PHONY: monitoring-up monitoring-down monitoring-logs
+
+monitor-up:
+	@echo "Starting monitoring tools..."
+	$(CONTAINER_ENGINE) compose -f docker-compose.monitoring.yml --env-file .env.production up -d
+	@echo "Monitoring tools started!"
+	@echo "   pgAdmin:   http://localhost:5050"
+	@echo "   Redis UI:  http://localhost:7843"
+	@echo ""
+	@echo "Access via SSH tunnel:"
+	@echo "   ssh -L 5050:localhost:5050 -L 7843:localhost:7843 user@host"
+
+monitor-down:
+	$(CONTAINER_ENGINE) compose -f docker-compose.monitoring.yml --env-file .env.production down
+
+monitor-logs:
+	$(CONTAINER_ENGINE) compose -f docker-compose.monitoring.yml --env-file .env.production logs -f
