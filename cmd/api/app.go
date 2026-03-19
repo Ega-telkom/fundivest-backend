@@ -47,7 +47,7 @@ func SetupApp(cfg *config.Config, infra *Infrastructure, logger *zap.Logger) *fi
     // Middlewares
     app.Use(recover.New())
     app.Use(cors.New(cors.Config{
-       	AllowOrigins: []string{cfg.FrontendURL},
+       	AllowOrigins: []string{cfg.AllowedOrigins},
     }))
     app.Use(helmet.New())
     app.Use(fiberLogger(logger))
