@@ -30,6 +30,7 @@ services:
 
 networks:
   cert-network:
+    name: cert-network
     external: true  # Use existing network from docker-compose.prod.yml
 
 volumes:

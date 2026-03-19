@@ -161,4 +161,5 @@ volumes:
 
 networks:
   cert-network:
+    name: cert-network
     driver: bridge
