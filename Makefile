@@ -130,7 +130,7 @@ test:
 
 monitor-up:
 	@echo "Starting monitoring tools..."
-	$(CONTAINER_ENGINE) compose -f docker-compose.monitoring.yml --env-file .env.production up -d --remove-orphans
+	$(CONTAINER_ENGINE) compose -f docker-compose.monitoring.yml --env-file .env.production up -d
 	@echo "Monitoring tools started!"
 	@echo "   pgAdmin:   http://localhost:5050"
 	@echo "   Redis UI:  http://localhost:7843"
