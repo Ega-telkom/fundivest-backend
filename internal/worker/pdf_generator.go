@@ -57,12 +57,6 @@ func (g *GotenbergClient) Generate(ctx context.Context, html string) ([]byte, er
      	return nil, fmt.Errorf("write html to form: %w", err)
     }
     
-    // Optional: Add custom options
-    _ = writer.WriteField("marginTop", "0.5")
-    _ = writer.WriteField("marginBottom", "0.5")
-    _ = writer.WriteField("marginLeft", "0.5")
-    _ = writer.WriteField("marginRight", "0.5")
-    
     _ = writer.Close()
     
     req, err := http.NewRequestWithContext(
