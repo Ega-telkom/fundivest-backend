@@ -5,13 +5,11 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/adaptor"
 	"github.com/gofiber/fiber/v3/middleware/cors"
     "github.com/gofiber/fiber/v3/middleware/helmet"
 	"github.com/gofiber/fiber/v3/middleware/recover"
+	swaggo "github.com/gofiber/contrib/v3/swaggo"
 	"go.uber.org/zap"
-
-	"github.com/swaggo/http-swagger/v2"
 
 	"github.com/Ega-telkom/fundivest-backend/internal/config"
 	"github.com/Ega-telkom/fundivest-backend/internal/handler"
@@ -51,10 +49,11 @@ func SetupApp(cfg *config.Config, infra *Infrastructure, logger *zap.Logger) *fi
     }))
     app.Use(helmet.New())
     app.Use(fiberLogger(logger))
-    
-   	app.Get("/swagger/*", adaptor.HTTPHandler(httpSwagger.Handler(
-		httpSwagger.DefaultModelsExpandDepth(-1),
-	)))
+   
+    if !cfg.IsProduction() {
+    	app.Get("/swagger/*", swaggo.HandlerDefault)
+    	logger.Info("Swagger UI is enabled, set environment to production to disable")
+    }
 
     // Routes
     setupRoutes(app, sessionHandler, certHandler)
