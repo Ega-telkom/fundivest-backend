@@ -49,7 +49,6 @@ dev-up:
 
 dev-down:
 	$(CONTAINER_ENGINE) compose down
-	@echo "hello $(USER)"
 
 dev-api:
 	air -c .air.toml
