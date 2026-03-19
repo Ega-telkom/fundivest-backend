@@ -13,7 +13,7 @@ import (
 func SetupWorker(cfg *config.Config, infra *Infrastructure, logger *zap.Logger) *queue.AsynqConsumer {
     certRepo := repoPostgres.NewCertificateRepo(infra.DB)
     
-    pdfGen := worker.NewGotenbergClient(cfg.GotenbergURL)
+    pdfGen := worker.NewGotenbergClient(cfg.GotenbergURL, logger)
     tmpl, _ := worker.NewHTMLTemplateRenderer(cfg.TemplatePath, cfg.AllowedOrigins)
     
     processor := worker.NewProcessor(certRepo, pdfGen, infra.FileStorage, tmpl, logger)
