@@ -20,7 +20,7 @@ type Infrastructure struct {
 }
 
 func SetupInfrastructure(cfg *config.Config, logger *zap.Logger) *Infrastructure {
-	db, err := gorm.Open(postgres.Open(cfg.DatabaseURL), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(cfg.PostgresDSN()), &gorm.Config{
 		Logger: gormLogger.Default.LogMode(gormLogger.Silent),
 	})
 	if err != nil {
@@ -36,9 +36,9 @@ func SetupInfrastructure(cfg *config.Config, logger *zap.Logger) *Infrastructure
 
 	// Initialize Storage
 	fileStorage, err := storage.NewMinIOStorage(
-		cfg.MinIOEndpoint,
-		cfg.MinIOAccessKey,
-		cfg.MinIOSecretKey,
+		cfg.MinioAddr(),
+		cfg.MinIORootUser,
+		cfg.MinIORootPassword,
 		cfg.MinIOBucket,
 		cfg.MinIOUseSSL,
 	)

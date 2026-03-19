@@ -18,7 +18,7 @@ func main() {
 	}
 
 	cfg := config.Load()
-	logger := config.NewLogger(cfg.Environment)
+	logger := config.NewLogger(cfg)
 	defer func() { _ = logger.Sync() }()
 
 	logger.Info("Starting worker")

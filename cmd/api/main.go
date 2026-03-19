@@ -28,7 +28,7 @@ func main() {
 
     // Load config
     cfg := config.Load()
-    logger := config.NewLogger(cfg.Environment)
+    logger := config.NewLogger(cfg)
     defer func() { _ = logger.Sync() }()
 
     // Setup infrastructure

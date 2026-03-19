@@ -26,7 +26,7 @@ type Infrastructure struct {
 
 func SetupInfrastructure(cfg *config.Config, logger *zap.Logger) *Infrastructure {
 	// Init Postgres
-	db, err := gorm.Open(postgres.Open(cfg.DatabaseURL), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(cfg.PostgresDSN()), &gorm.Config{
 		Logger: gormLogger.Default.LogMode(gormLogger.Silent),
 	})
 	if err != nil {
@@ -46,7 +46,7 @@ func SetupInfrastructure(cfg *config.Config, logger *zap.Logger) *Infrastructure
 
 	// Init Valkey
 	valkeyClient, err := valkey.NewClient(valkey.ClientOption{
-		InitAddress: []string{cfg.ValkeyURL},
+		InitAddress: []string{cfg.ValkeyAddr()},
 		Password: cfg.ValkeyPassword,
 	})
 	if err != nil {
@@ -55,14 +55,14 @@ func SetupInfrastructure(cfg *config.Config, logger *zap.Logger) *Infrastructure
 	logger.Info("Connected to Valkey")
 
 	// Init Queue
-	queuePublisher := queue.NewAsynqPublisher(cfg.ValkeyURL, cfg.ValkeyPassword)
+	queuePublisher := queue.NewAsynqPublisher(cfg.ValkeyAddr(), cfg.ValkeyPassword)
 	logger.Info("Queue publisher initialized")
 
 	// Init Storage
 	fileStorage, err := storage.NewMinIOStorage(
-		cfg.MinIOEndpoint,
-		cfg.MinIOAccessKey,
-		cfg.MinIOSecretKey,
+		cfg.MinioAddr(),
+		cfg.MinIORootUser,
+		cfg.MinIORootPassword,
 		cfg.MinIOBucket,
 		cfg.MinIOUseSSL,
 	)
