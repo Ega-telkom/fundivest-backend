@@ -5,14 +5,14 @@ services:
     container_name: certdb-postgres
     env_file: .env.production
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-certdb}
-      POSTGRES_USER: ${POSTGRES_USER:-certuser}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     # NO ports - internal only
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-certuser}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -91,19 +91,26 @@ services:
     env_file:
       - .env.production
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
-      VALKEY_URL: valkey:6379
-      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
-      GOTENBERG_URL: http://gotenberg:3000
-      TEMPLATE_PATH: /app/templates/certificate.html
+      ENVIRONMENT: ${ENVIRONMENT}
       STORAGE_TYPE: minio
-      MINIO_ENDPOINT: minio:9000
+      DB_HOST: ${DB_HOST} 
+      DB_PORT: ${DB_PORT} 
+      DB_NAME: ${DB_NAME} 
+      DB_USER: ${DB_USER} 
+      DB_PASSWORD: ${DB_PASSWORD} 
+      DB_SSLMODE: ${DB_SSLMODE} 
+      VALKEY_HOST: ${VALKEY_HOST} 
+      VALKEY_PORT: ${VALKEY_PORT}
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
+      MINIO_HOST: ${MINIO_HOST} 
+      MINIO_PORT: ${MINIO_PORT}
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET: certificates
-      MINIO_USE_SSL: "false"
-      ENVIRONMENT: production
-      FRONTEND_URL: ${FRONTEND_URL}
+      MINIO_BUCKET: ${MINIO_BUCKET} 
+      MINIO_USE_SSL: ${MINIO_USE_SSL}
+      TEMPLATE_PATH: ${TEMPLATE_PATH} 
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      GOTENBERG_URL: ${GOTENBERG_URL} 
     volumes:
       - ./templates:/app/templates:ro  # Read-only
     depends_on:
@@ -128,19 +135,26 @@ services:
     env_file:
       - .env.production
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
-      VALKEY_URL: valkey:6379
-      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
-      GOTENBERG_URL: http://gotenberg:3000
-      TEMPLATE_PATH: /app/templates/certificate.html
+      ENVIRONMENT: ${ENVIRONMENT}
       STORAGE_TYPE: minio
-      MINIO_ENDPOINT: minio:9000
+      DB_HOST: ${DB_HOST} 
+      DB_PORT: ${DB_PORT} 
+      DB_NAME: ${DB_NAME} 
+      DB_USER: ${DB_USER} 
+      DB_PASSWORD: ${DB_PASSWORD} 
+      DB_SSLMODE: ${DB_SSLMODE} 
+      VALKEY_HOST: ${VALKEY_HOST} 
+      VALKEY_PORT: ${VALKEY_PORT}
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
+      MINIO_HOST: ${MINIO_HOST} 
+      MINIO_PORT: ${MINIO_PORT}
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET: certificates
-      MINIO_USE_SSL: "false"
-      ENVIRONMENT: production
-      FRONTEND_URL: ${FRONTEND_URL}
+      MINIO_BUCKET: ${MINIO_BUCKET} 
+      MINIO_USE_SSL: ${MINIO_USE_SSL}
+      TEMPLATE_PATH: ${TEMPLATE_PATH} 
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      GOTENBERG_URL: ${GOTENBERG_URL}
     volumes:
       - ./templates:/app/templates:ro  # Read-only
     depends_on:
