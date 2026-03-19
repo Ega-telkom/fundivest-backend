@@ -30,6 +30,11 @@ func main() {
     cfg := config.Load()
     logger := config.NewLogger(cfg)
     defer func() { _ = logger.Sync() }()
+    
+    logger.Info("Starting application",
+        zap.String("environment", cfg.Environment),
+        zap.Bool("production", cfg.IsProduction()),
+    )
 
     // Setup infrastructure
     infra := SetupInfrastructure(cfg, logger)
