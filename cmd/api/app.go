@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/adaptor"
 	"github.com/gofiber/fiber/v3/middleware/cors"
+    "github.com/gofiber/fiber/v3/middleware/helmet"
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"go.uber.org/zap"
 
@@ -45,9 +46,12 @@ func SetupApp(cfg *config.Config, infra *Infrastructure, logger *zap.Logger) *fi
 
     // Middlewares
     app.Use(recover.New())
+    app.Use(cors.New(cors.Config{
+       	AllowOrigins: []string{cfg.FrontendURL},
+    }))
+    app.Use(helmet.New())
     app.Use(fiberLogger(logger))
-    app.Use(cors.New())
-
+    
    	app.Get("/swagger/*", adaptor.HTTPHandler(httpSwagger.Handler(
 		httpSwagger.DefaultModelsExpandDepth(-1),
 	)))
