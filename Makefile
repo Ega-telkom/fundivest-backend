@@ -37,6 +37,9 @@ help:
 	@echo "  make monitor-up      - Run monitoring services" 
 	@echo "  make monitor-down    - Stop monitoring services" 
 	@echo "  make monitor-logs    - Monitoring services Logs" 
+	@echo ""
+	@echo "Orphans:"
+	@echo "  make clean-orphans   - Clean orphans" 
 
 # ============================================================================
 # DEVELOPMENT
@@ -69,7 +72,7 @@ prod-build:
 	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production build
 
 prod-up:
-	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production up -d --remove-orphans
+	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production up -d
 
 prod-down:
 	$(CONTAINER_ENGINE) compose -f docker-compose.prod.yml --env-file .env.production down
@@ -143,3 +146,11 @@ monitor-down:
 
 monitor-logs:
 	$(CONTAINER_ENGINE) compose -f docker-compose.monitoring.yml --env-file .env.production logs -f
+
+# ============================================================================
+# CLEAN ORPHANS
+# ============================================================================
+clean-orphans:
+	@echo "Cleaning orphan containers..."
+	docker container prune -f
+	@echo "Orphans removed!"
