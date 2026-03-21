@@ -4,7 +4,6 @@ package worker
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/Ega-telkom/fundivest-backend/internal/domain"
 
@@ -54,18 +53,19 @@ func NewProcessor(
 }
 
 func (p *Processor) Process(ctx context.Context, certID string) error {
+	p.logger.Info("Processing certificate", zap.String("cert_id", certID))
 	
 	// 1. Get certificate
 	cert, err := p.certRepo.GetByID(ctx, certID)
 	if err != nil {
-		// p.logger.Error("Failed to get certificate", zap.String("cert_id", certID), zap.Error(err))
+		p.logger.Error("Failed to get certificate", zap.String("cert_id", certID), zap.Error(err))
 		return fmt.Errorf("get certificate: %w", err)
 	}
 
 	// 2. Generate HTML
 	html, err := p.tmpl.Render(cert)
 	if err != nil {
-		// p.logger.Error("Failed to render template", zap.String("cert_id", certID), zap.Error(err))
+		p.logger.Error("Failed to render template", zap.String("cert_id", certID), zap.Error(err))
 		p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed)
 		return fmt.Errorf("render template: %w", err)
 	}
@@ -73,7 +73,7 @@ func (p *Processor) Process(ctx context.Context, certID string) error {
 	// 3. Convert to PDF
 	pdfData, err := p.pdfGen.Generate(ctx, html)
 	if err != nil {
-		// p.logger.Error("Failed to generate PDF", zap.String("cert_id", certID), zap.Error(err))
+		p.logger.Error("Failed to generate PDF", zap.String("cert_id", certID), zap.Error(err))
 		p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed)
 		return fmt.Errorf("generate pdf: %w", err)
 	}
@@ -81,17 +81,17 @@ func (p *Processor) Process(ctx context.Context, certID string) error {
 	// 4. Save file
 	filename := fmt.Sprintf("%s.pdf", certID)
 	if err := p.storage.Save(ctx, filename, pdfData); err != nil {
-		// p.logger.Error("Failed to save PDF", zap.String("cert_id", certID), zap.Error(err))
+		p.logger.Error("Failed to save PDF", zap.String("cert_id", certID), zap.Error(err))
 		p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed)
 		return fmt.Errorf("save file: %w", err)
 	}
 
 	// 5. Update database
 	if err := p.certRepo.UpdatePDFPath(ctx, certID, filename); err != nil {
-		// p.logger.Error("failed to update PDF path", zap.String("cert_id", certID), zap.Error(err))
+		p.logger.Error("Failed to update PDF path", zap.String("cert_id", certID), zap.Error(err))
 		return fmt.Errorf("update pdf path: %w", err)
 	}
-
-	log.Printf("Certificate %s generated successfully", certID)
+	
+    p.logger.Info("Certificate generated successfully", zap.String("cert_id", certID))
 	return nil
 }

@@ -55,7 +55,7 @@ func SetupInfrastructure(cfg *config.Config, logger *zap.Logger) *Infrastructure
 	logger.Info("Connected to Valkey")
 
 	// Init Queue
-	queuePublisher := queue.NewAsynqPublisher(cfg.ValkeyAddr(), cfg.ValkeyPassword)
+	queuePublisher := queue.NewAsynqPublisher(cfg.ValkeyAddr(), cfg.ValkeyPassword, logger)
 	logger.Info("Queue publisher initialized")
 
 	// Init Storage

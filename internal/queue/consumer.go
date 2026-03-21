@@ -52,7 +52,7 @@ func NewAsynqConsumer(
         concur: concur,
         queues: queues,
     }
-    
+   
     // Register handler
     mux.HandleFunc(TypeCertificateGeneration, consumer.handleCertificateGeneration)
     
@@ -62,19 +62,49 @@ func NewAsynqConsumer(
 func (c *AsynqConsumer) handleCertificateGeneration(ctx context.Context, task *asynq.Task) error {
     var payload map[string]string
     if err := json.Unmarshal(task.Payload(), &payload); err != nil {
+    	c.logger.Error("Failed to unmarshal task payload",
+         	zap.String("task_type", task.Type()),
+         	zap.Error(err),
+     	)
         return fmt.Errorf("unmarshal payload: %w", err)
     }
     
     certID := payload["certificate_id"]
-    log.Printf("Processing certificate job: %s", certID)
+    c.logger.Info("Processing certificate job",
+        zap.String("cert_id", certID),
+        zap.String("task_id", task.ResultWriter().TaskID()),
+    )
     
-    return c.processor.Process(ctx, certID)
+    // Process certificate
+    if err := c.processor.Process(ctx, certID); err != nil {
+        c.logger.Error("Certificate processing failed",
+            zap.String("cert_id", certID),
+            zap.Error(err),
+        )
+        return err
+    }
+    
+    c.logger.Info("Certificate processed successfully",
+        zap.String("cert_id", certID),
+    )
+    
+    return nil
 }
 
 func (c *AsynqConsumer) Start() error {
-    return c.server.Start(c.mux)
+	c.logger.Info("Starting up asynq consumer", 
+		zap.Int("concurrency", c.concur),
+		zap.Any("queues", c.queues),
+	)
+	if err := c.server.Start(c.mux); err != nil {
+        c.logger.Fatal("Failed to start consumer", zap.Error(err))
+        return err
+    }
+    return nil
 }
 
 func (c *AsynqConsumer) Shutdown() {
+	c.logger.Info("Shutting down asynq consumer")
     c.server.Shutdown()
+    c.logger.Info("Asynq consumer shutdown complete")
 }

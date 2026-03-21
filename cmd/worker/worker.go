@@ -14,7 +14,7 @@ func SetupWorker(cfg *config.Config, infra *Infrastructure, logger *zap.Logger) 
     certRepo := repoPostgres.NewCertificateRepo(infra.DB)
     
     pdfGen := worker.NewGotenbergClient(cfg.GotenbergURL, logger)
-    tmpl, _ := worker.NewHTMLTemplateRenderer(cfg.TemplatePath, cfg.AllowedOrigins)
+    tmpl, _ := worker.NewHTMLTemplateRenderer(cfg.TemplatePath, cfg.AllowedOrigins, logger)
     
     processor := worker.NewProcessor(certRepo, pdfGen, infra.FileStorage, tmpl, logger)
     
