@@ -18,5 +18,5 @@ func SetupWorker(cfg *config.Config, infra *Infrastructure, logger *zap.Logger) 
     
     processor := worker.NewProcessor(certRepo, pdfGen, infra.FileStorage, tmpl, logger)
     
-    return queue.NewAsynqConsumer(cfg.ValkeyAddr(), cfg.ValkeyPassword, processor)
+    return queue.NewAsynqConsumer(cfg.ValkeyAddr(), cfg.ValkeyPassword, processor, logger, cfg.AsynqConcurrency, cfg.AsynqQueues)
 }

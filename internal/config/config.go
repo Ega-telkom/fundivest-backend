@@ -35,6 +35,9 @@ type Config struct {
 	MinIOUseSSL       bool
 
 	// App
+	AsynqConcurrency int
+	AsynqQueues      map[string]int
+
 	TemplatePath   string
 	AllowedOrigins string
 	GotenbergURL   string
@@ -67,10 +70,16 @@ func Load() *Config {
 		MinIOUseSSL:       getEnv("MINIO_USE_SSL", "false") == "true",
 
 		// App
-		TemplatePath:   getEnv("TEMPLATE_PATH", "./templates/certificate.html"),
-		AllowedOrigins: getEnv("ALLOWED_ORIGINS", "http://localhost:3000"),
-		GotenbergURL:   getEnv("GOTENBERG_URL", "http://localhost:3000"),
-		SessionTTL:     24 * time.Hour,
+		AsynqConcurrency: getEnvInt("ASYNQ_CONCURRENCY", 10),
+		AsynqQueues:      getEnvMapStringInt("ASYNQ_QUEUES", map[string]int{
+            "critical": 6,
+            "default":  3,
+            "low":      1,
+        }),
+		TemplatePath:     getEnv("TEMPLATE_PATH", "./templates/certificate.html"),
+		AllowedOrigins:   getEnv("ALLOWED_ORIGINS", "http://localhost:3000"),
+		GotenbergURL:     getEnv("GOTENBERG_URL", "http://localhost:3000"),
+		SessionTTL:       24 * time.Hour,
 	}
 }
 
@@ -139,4 +148,27 @@ func getEnv(key, defaultVal string) string {
 		return val
 	}
 	return defaultVal
+}
+
+func getEnvInt(key string, defaultVal int) int {
+	if val := os.Getenv(key); val != "" {
+		if num, err := strconv.Atoi(val); err == nil {
+			return num
+		}
+	}
+
+	return defaultVal
+}
+
+func getEnvMapStringInt(key string, defaultVal map[string]int) map[string]int {
+	val := os.Getenv(key)
+	if val == "" {
+		return defaultVal
+	}
+
+	result := make(map[string]int)
+	if err := json.Unmarshal([]byte(val), &result); err != nil {
+		return defaultVal
+	}
+	return result
 }

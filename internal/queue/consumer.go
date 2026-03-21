@@ -2,12 +2,12 @@
 package queue
 
 import (
-    "context"
-    "encoding/json"
-    "fmt"
-    "log"
-    
-    "github.com/hibiken/asynq"
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"github.com/hibiken/asynq"
+	"go.uber.org/zap"
 )
 
 type JobProcessor interface {
@@ -18,16 +18,27 @@ type AsynqConsumer struct {
     server    *asynq.Server
     mux       *asynq.ServeMux
     processor JobProcessor
+    logger *zap.Logger
+    concur int
+    queues map[string]int
 }
 
-func NewAsynqConsumer(valkeyAddr string, password string, processor JobProcessor) *AsynqConsumer {
+func NewAsynqConsumer(
+	valkeyAddr string, 
+	password string, 
+	processor JobProcessor, 
+	logger *zap.Logger, 
+	concur int,
+	queues map[string]int,
+) *AsynqConsumer {
     server := asynq.NewServer(
         asynq.RedisClientOpt{
         	Addr: valkeyAddr,
         	Password: password,
         },
         asynq.Config{
-            Concurrency: 10,
+            Concurrency: concur,
+            Queues: queues,
         },
     )
     
@@ -37,6 +48,9 @@ func NewAsynqConsumer(valkeyAddr string, password string, processor JobProcessor
         server:    server,
         mux:       mux,
         processor: processor,
+        logger: logger,
+        concur: concur,
+        queues: queues,
     }
     
     // Register handler
