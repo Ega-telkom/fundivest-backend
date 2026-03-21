@@ -2,6 +2,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,7 +15,7 @@ import (
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-
+    	log.Printf("Failed to load .env: %v", err)
 	}
 
 	cfg := config.Load()

@@ -65,7 +65,7 @@ func (p *AsynqPublisher) Publish(ctx context.Context, certID string) error {
 			zap.String("cert_id", certID),
 			zap.Error(err),
 		)
-		fmt.Errorf("enqueue task: %w", err)
+		return fmt.Errorf("enqueue task: %w", err)
 	}
 	
 	p.logger.Info("Job enqueued successfully",

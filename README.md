@@ -14,3 +14,12 @@ $ make dev-up
 $ make dev-worker
 $ make dev-api
 ```
+
+## TODO
+### Tambah Logger
+- [x] cmd/* (all)
+- [x] handler/* (all)
+- [ ] service/* (all)
+- [x] worker/* (all)
+- [ ] storage/* (all)
+- [ ] queue/* (all)

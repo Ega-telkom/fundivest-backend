@@ -4,6 +4,7 @@ package integration
 import (
     "context"
     "testing"
+    "errors"
     "time"
     
     "github.com/stretchr/testify/assert"
@@ -134,12 +135,13 @@ func TestSessionFlow_ConcurrentRequests(t *testing.T) {
     var failCount int
     for i := 0; i < goroutines; i++ {
         err := <-done
-        if err == nil {
+        switch {
+        case err == nil:
             successCount++
-        } else if err == domain.ErrChapterAlreadyCompleted {
+        case errors.Is(err, domain.ErrChapterAlreadyCompleted):
             failCount++
-        } else {
-            t.Fatalf("Unexpected error: %v", err)
+        default:
+            t.Fatalf("unexpected error: %v", err)
         }
     }
     

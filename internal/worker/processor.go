@@ -66,7 +66,9 @@ func (p *Processor) Process(ctx context.Context, certID string) error {
 	html, err := p.tmpl.Render(cert)
 	if err != nil {
 		p.logger.Error("Failed to render template", zap.String("cert_id", certID), zap.Error(err))
-		p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed)
+		if err := p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed); err != nil {
+			p.logger.Error("Failed to update certificate status", zap.Error(err))
+		}
 		return fmt.Errorf("render template: %w", err)
 	}
 
@@ -74,7 +76,9 @@ func (p *Processor) Process(ctx context.Context, certID string) error {
 	pdfData, err := p.pdfGen.Generate(ctx, html)
 	if err != nil {
 		p.logger.Error("Failed to generate PDF", zap.String("cert_id", certID), zap.Error(err))
-		p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed)
+		if err := p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed); err != nil {
+			p.logger.Error("Failed to update certificate status", zap.Error(err))
+		}
 		return fmt.Errorf("generate pdf: %w", err)
 	}
 
@@ -82,7 +86,9 @@ func (p *Processor) Process(ctx context.Context, certID string) error {
 	filename := fmt.Sprintf("%s.pdf", certID)
 	if err := p.storage.Save(ctx, filename, pdfData); err != nil {
 		p.logger.Error("Failed to save PDF", zap.String("cert_id", certID), zap.Error(err))
-		p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed)
+		if err := p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed); err != nil {
+			p.logger.Error("Failed to update certificate status", zap.Error(err))
+		}
 		return fmt.Errorf("save file: %w", err)
 	}
 

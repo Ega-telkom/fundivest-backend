@@ -104,9 +104,15 @@ func TestCertificateFlow_CannotRequestTwice(t *testing.T) {
     
     // Create session and complete all chapters
     sessionID, _ := sessionSvc.CreateSession(ctx, "Jane Doe", "course-1")
-    sessionSvc.CompleteChapter(ctx, sessionID, 1)
-    sessionSvc.CompleteChapter(ctx, sessionID, 2)
-    sessionSvc.CompleteChapter(ctx, sessionID, 3)
+    
+    err := sessionSvc.CompleteChapter(ctx, sessionID, 1)
+    require.NoError(t, err)
+    
+    err = sessionSvc.CompleteChapter(ctx, sessionID, 2)
+    require.NoError(t, err)
+    
+    err = sessionSvc.CompleteChapter(ctx, sessionID, 3)
+    require.NoError(t, err)
     
     // First request succeeds
     certID1, err := certSvc.RequestCertificate(ctx, sessionID)
@@ -140,10 +146,14 @@ func TestCertificateFlow_CannotRequestWithIncompleteChapters(t *testing.T) {
     
     // Create session and complete only 2 chapters
     sessionID, _ := sessionSvc.CreateSession(ctx, "Bob Smith", "course-1")
-    sessionSvc.CompleteChapter(ctx, sessionID, 1)
-    sessionSvc.CompleteChapter(ctx, sessionID, 2)
+    
+    err := sessionSvc.CompleteChapter(ctx, sessionID, 1)
+    assert.NoError(t, err)
+    
+    err = sessionSvc.CompleteChapter(ctx, sessionID, 2)
+    assert.NoError(t, err)
     
     // Request certificate should fail
-    _, err := certSvc.RequestCertificate(ctx, sessionID)
+    _, err = certSvc.RequestCertificate(ctx, sessionID)
     assert.ErrorIs(t, err, domain.ErrNotAllChaptersCompleted)
 }
