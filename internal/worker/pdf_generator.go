@@ -57,6 +57,9 @@ func (g *GotenbergClient) Generate(ctx context.Context, html string) ([]byte, er
      	return nil, fmt.Errorf("write html to form: %w", err)
     }
     
+    _ = writer.WriteField("preferCssPageSize", "true")
+    _ = writer.WriteField("printBackground", "true")
+    
     _ = writer.Close()
     
     req, err := http.NewRequestWithContext(
