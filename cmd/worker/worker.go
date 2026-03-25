@@ -3,6 +3,7 @@ package main
 
 import (
 	"github.com/Ega-telkom/fundivest-backend/internal/config"
+	"github.com/Ega-telkom/fundivest-backend/internal/pubsub"
 	"github.com/Ega-telkom/fundivest-backend/internal/queue"
 	repoPostgres "github.com/Ega-telkom/fundivest-backend/internal/repository/postgres"
 	"github.com/Ega-telkom/fundivest-backend/internal/worker"
@@ -10,13 +11,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func SetupWorker(cfg *config.Config, infra *Infrastructure, logger *zap.Logger) *queue.AsynqConsumer {
+func SetupWorker(cfg *config.Config, infra *Infrastructure, pubsub pubsub.PubSub, logger *zap.Logger) *queue.AsynqConsumer {
     certRepo := repoPostgres.NewCertificateRepo(infra.DB)
     
     pdfGen := worker.NewGotenbergClient(cfg.GotenbergURL, logger)
     tmpl, _ := worker.NewHTMLTemplateRenderer(cfg.TemplatePath, cfg.AllowedOrigins, logger)
     
-    processor := worker.NewProcessor(certRepo, pdfGen, infra.FileStorage, tmpl, logger)
+    processor := worker.NewProcessor(certRepo, pdfGen, infra.FileStorage, tmpl, pubsub, logger)
     
     return queue.NewAsynqConsumer(cfg.ValkeyAddr(), cfg.ValkeyPassword, processor, logger, cfg.AsynqConcurrency, cfg.AsynqQueues)
 }

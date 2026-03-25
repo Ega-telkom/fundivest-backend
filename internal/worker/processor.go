@@ -3,9 +3,10 @@ package worker
 
 import (
 	"context"
-	"fmt"
+	// "time"
 
 	"github.com/Ega-telkom/fundivest-backend/internal/domain"
+	"github.com/Ega-telkom/fundivest-backend/internal/pubsub"
 
 	"go.uber.org/zap"
 )
@@ -33,6 +34,7 @@ type Processor struct {
 	pdfGen   PDFGenerator
 	storage  FileStorage
 	tmpl     TemplateRenderer
+	pubsub		pubsub.PubSub
 	logger   *zap.Logger
 }
 
@@ -41,6 +43,7 @@ func NewProcessor(
 	pdfGen PDFGenerator,
 	storage FileStorage,
 	tmpl TemplateRenderer,
+	pubsub		pubsub.PubSub,
 	logger *zap.Logger,
 ) *Processor {
 	return &Processor{
@@ -48,56 +51,83 @@ func NewProcessor(
 		pdfGen:   pdfGen,
 		storage:  storage,
 		tmpl:     tmpl,
+		pubsub: pubsub,
 		logger:   logger,
 	}
 }
 
 func (p *Processor) Process(ctx context.Context, certID string) error {
+
 	p.logger.Info("Processing certificate", zap.String("cert_id", certID))
-	
-	// 1. Get certificate
+
 	cert, err := p.certRepo.GetByID(ctx, certID)
 	if err != nil {
-		p.logger.Error("Failed to get certificate", zap.String("cert_id", certID), zap.Error(err))
-		return fmt.Errorf("get certificate: %w", err)
+		return err
 	}
 
-	// 2. Generate HTML
+	// Idempotency guard
+	if cert.Status == domain.StatusDone {
+		p.logger.Info("Certificate already processed", zap.String("cert_id", certID))
+		return nil
+	}
+
+	// Move to processing state
+	if err := p.certRepo.UpdateStatus(ctx, certID, domain.StatusProcessing); err != nil {
+		return err
+	}
+
+	p.pubsub.Publish(ctx, "cert:"+certID, "processing")
+
+	// time.Sleep(20 * time.Second)
+
+	// Generate HTML
 	html, err := p.tmpl.Render(cert)
 	if err != nil {
-		p.logger.Error("Failed to render template", zap.String("cert_id", certID), zap.Error(err))
-		if err := p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed); err != nil {
-			p.logger.Error("Failed to update certificate status", zap.Error(err))
-		}
-		return fmt.Errorf("render template: %w", err)
+		p.fail(ctx, certID, err, "render template")
+		return err
 	}
 
-	// 3. Convert to PDF
+	// Generate PDF
 	pdfData, err := p.pdfGen.Generate(ctx, html)
 	if err != nil {
-		p.logger.Error("Failed to generate PDF", zap.String("cert_id", certID), zap.Error(err))
-		if err := p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed); err != nil {
-			p.logger.Error("Failed to update certificate status", zap.Error(err))
-		}
-		return fmt.Errorf("generate pdf: %w", err)
+		p.fail(ctx, certID, err, "generate pdf")
+		return err
 	}
 
-	// 4. Save file
-	filename := fmt.Sprintf("%s.pdf", certID)
+	// Save file (idempotent overwrite)
+	filename := certID + ".pdf"
+
 	if err := p.storage.Save(ctx, filename, pdfData); err != nil {
-		p.logger.Error("Failed to save PDF", zap.String("cert_id", certID), zap.Error(err))
-		if err := p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed); err != nil {
-			p.logger.Error("Failed to update certificate status", zap.Error(err))
-		}
-		return fmt.Errorf("save file: %w", err)
+		p.fail(ctx, certID, err, "save file")
+		return err
 	}
 
-	// 5. Update database
+	// Update DB
 	if err := p.certRepo.UpdatePDFPath(ctx, certID, filename); err != nil {
-		p.logger.Error("Failed to update PDF path", zap.String("cert_id", certID), zap.Error(err))
-		return fmt.Errorf("update pdf path: %w", err)
+		return err
 	}
-	
-    p.logger.Info("Certificate generated successfully", zap.String("cert_id", certID))
+
+	if err := p.certRepo.UpdateStatus(ctx, certID, domain.StatusDone); err != nil {
+		return err
+	}
+
+	p.pubsub.Publish(ctx, "cert:"+certID, "done")
+
+	p.logger.Info("Certificate generated successfully", zap.String("cert_id", certID))
+
 	return nil
+}
+
+func (p *Processor) fail(ctx context.Context, certID string, err error, step string) {
+
+	p.logger.Error(
+		"Certificate processing failed",
+		zap.String("cert_id", certID),
+		zap.String("step", step),
+		zap.Error(err),
+	)
+
+	p.certRepo.UpdateStatus(ctx, certID, domain.StatusFailed)
+
+	p.pubsub.Publish(ctx, "cert:"+certID, "failed")
 }

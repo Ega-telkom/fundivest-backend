@@ -4,15 +4,16 @@ package main
 import (
 	"time"
 
+	swaggo "github.com/gofiber/contrib/v3/swaggo"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
-    "github.com/gofiber/fiber/v3/middleware/helmet"
+	"github.com/gofiber/fiber/v3/middleware/helmet"
 	"github.com/gofiber/fiber/v3/middleware/recover"
-	swaggo "github.com/gofiber/contrib/v3/swaggo"
 	"go.uber.org/zap"
 
 	"github.com/Ega-telkom/fundivest-backend/internal/config"
 	"github.com/Ega-telkom/fundivest-backend/internal/handler"
+	"github.com/Ega-telkom/fundivest-backend/internal/pubsub"
 	repoPostgres "github.com/Ega-telkom/fundivest-backend/internal/repository/postgres"
 	repoValkey "github.com/Ega-telkom/fundivest-backend/internal/repository/valkey"
 	"github.com/Ega-telkom/fundivest-backend/internal/service"
@@ -32,8 +33,10 @@ func SetupApp(cfg *config.Config, infra *Infrastructure, logger *zap.Logger) *fi
     )
     sessionSvc := service.NewSessionService(sessionRepo, cfg.SessionTTL)
 
+    pubsub := pubsub.NewRedisPubSub(infra.ValkeyClient)
+    
     // Init handlers
-    certHandler := handler.NewCertificateHandler(certSvc)
+    certHandler := handler.NewCertificateHandler(certSvc, pubsub, logger)
     sessionHandler := handler.NewSessionHandler(sessionSvc)
 
     // Setup Fiber
@@ -86,6 +89,7 @@ func setupRoutes(
     // Certificate routes
     cert := v1.Group("/certificates")
     cert.Get("/:certificate_id/status", certHandler.GetStatus)
+    cert.Get("/:certificate_id/stream", certHandler.StreamStatus)
     cert.Get("/:certificate_id/download", certHandler.Download)
     cert.Get("/:certificate_id/verify", certHandler.Verify)
 }

@@ -8,6 +8,8 @@ import (
 	"syscall"
 
 	"github.com/Ega-telkom/fundivest-backend/internal/config"
+	"github.com/Ega-telkom/fundivest-backend/internal/pubsub"
+	"github.com/valkey-io/valkey-go"
 
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
@@ -25,9 +27,20 @@ func main() {
 	logger.Info("Starting worker")
 
 	infra := SetupInfrastructure(cfg, logger)
+	valkeyClient, err := valkey.NewClient(valkey.ClientOption{
+		InitAddress: []string{cfg.ValkeyAddr()},
+		Password: cfg.ValkeyPassword,
+	})
+	if err != nil {
+		logger.Fatal("Failed to connect to Valkey", zap.Error(err))
+	}
+	logger.Info("Connected to Valkey")
+	
+	pubsub := pubsub.NewRedisPubSub(valkeyClient)
+	
 	defer infra.Close()
 
-	worker := SetupWorker(cfg, infra, logger)
+	worker := SetupWorker(cfg, infra, pubsub, logger)
 
 	go func() {
 		logger.Info("Worker started, waiting for jobs...")
