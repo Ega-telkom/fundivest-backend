@@ -16,7 +16,7 @@ type Certificate struct {
 type CertStatus string
 
 const (
-	StatusPending CertStatus = "pending"
-	StatusDone    CertStatus = "done"
-	StatusFailed  CertStatus = "failed"
+	StatusProcessing CertStatus = "processing"
+	StatusDone       CertStatus = "done"
+	StatusFailed     CertStatus = "failed"
 )

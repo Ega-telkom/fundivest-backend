@@ -77,7 +77,7 @@ func (s *CertificateService) RequestCertificate(ctx context.Context, sessionID s
         CourseID:  sess.CourseID,
         SessionID: sessionID,
         IssuedAt:  time.Now(),
-        Status:    domain.StatusPending,
+        Status:    domain.StatusProcessing,
     }
     
     if err := s.certRepo.Create(ctx, cert); err != nil {
